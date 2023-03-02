@@ -42,19 +42,12 @@ class Moin2GitContext:
     """
 
     logger: logging.Logger = attr.ib()
-    _moin_data: Path = attr.ib(default=None)
+    moin_data: Path = attr.ib()
     users: Moin2GitUserSet = attr.ib(default=None)
     syslog: bool = attr.ib(default=False)
     debug: bool = attr.ib(default=False)
     verbose: bool = attr.ib(default=False)
     proxies: Dict[str, str] = attr.ib(default={})
-
-    @property
-    def moin_data(self):
-        if self._moin_data is not None:
-            return self._moin_data
-        else:
-            raise RuntimeError("moin_data is not set - look at --moin-data option")
 
     @classmethod
     def create_context(cls, **kwargs):
@@ -66,27 +59,20 @@ class Moin2GitContext:
         if "logger" not in kwargs:
             logger = logging.getLogger("moin2gitwiki")
             kwargs["logger"] = logger
-        if "moin_data" in kwargs:
-            moin_data = kwargs["moin_data"]
-            del kwargs["moin_data"]
-        else:
-            moin_data = None
         if "user_map" in kwargs:
             user_map = kwargs["user_map"]
             del kwargs["user_map"]
-
-        if moin_data:
-            #
-            # make the paths absolute
-            kwargs["_moin_data"] = Path(moin_data).resolve(strict=True)
-            #
-            # get the proxies
-            proxies: Dict[str, str] = {}
-            if "proxies" in kwargs:
-                for proxy_setting in kwargs["proxies"]:
-                    key, value = proxy_setting.split("=", maxsplit=1)
-                    proxies[key] = value
-            kwargs["proxies"] = proxies
+        #
+        # make the paths absolute
+        kwargs["moin_data"] = Path(kwargs["moin_data"]).resolve(strict=True)
+        #
+        # get the proxies
+        proxies: Dict[str, str] = {}
+        if "proxies" in kwargs:
+            for proxy_setting in kwargs["proxies"]:
+                key, value = proxy_setting.split("=", maxsplit=1)
+                proxies[key] = value
+        kwargs["proxies"] = proxies
         #
         # build the context object
         context = cls(**kwargs)
@@ -98,7 +84,7 @@ class Moin2GitContext:
                 path=user_map,
                 logger=context.logger,
             )
-        elif moin_data:
+        else:
             context.users = Moin2GitUserSet.load_users_from_wiki_data(
                 wiki_data_path=context.moin_data,
                 logger=context.logger,
