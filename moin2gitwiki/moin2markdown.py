@@ -148,7 +148,7 @@ class Moin2Markdown:
         - remap any emoji img to the emoji sequence
 
         """
-        soup = BeautifulSoup(html, "html.parser")
+        soup = BeautifulSoup(html, "lxml")
         content = soup.find(id="content")
         if content is None:
             return ""
@@ -249,7 +249,7 @@ class Moin2Markdown:
     def translate(self, input: str) -> bytes:
         """Translate HTML to Github Flavoured Markdown using pandoc"""
         process = subprocess.Popen(
-            ["pandoc", "-f", "html", "-t", "gfm"],
+            ["pandoc", "-f", "html", "-t", "gfm", "--wrap=none"],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
         )

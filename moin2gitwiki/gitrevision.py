@@ -71,7 +71,7 @@ class GitExportStream:
             self.write_string(f"M 100644 :{blob_ref} {name}\n\n")
         elif revision.edit_type == MoinEditType.RENAME:
             self.write_string(
-                f"D {revision.markdown_transform(revision.previous_page_name)}\n",
+                f"D {revision.markdown_transform(revision.previous_page_name)}.md\n",
             )
             self.write_string(f"M 100644 :{blob_ref} {name}\n\n")
         elif revision.edit_type == MoinEditType.DELETE:

@@ -105,7 +105,7 @@ class MoinEditEntry:
 
     def unescape(self, thing: str) -> str:
         """Uescape a wiki name - translate (2f) to /"""
-        return thing.replace("(2f)", "/")
+        return thing.replace("(2f)", "/").replace("(2d)", "-").replace("(2e)", ".")
 
     def page_name_unescaped(self) -> str:
         """Unescape the page name"""
@@ -117,7 +117,7 @@ class MoinEditEntry:
 
     def markdown_transform(self, thing: str) -> str:
         """Translates the (2f) to _ for use in Markdown page names"""
-        return thing.replace("(2f)", "_")
+        return thing.replace("(2f)", "/").replace("(2d)", "-").replace("(2e)", ".")
 
     def markdown_page_path(self):
         """Page path translated"""
@@ -147,6 +147,7 @@ class MoinEditEntries:
         attachment_link_table = {}
         entries = []
         for page in pages:
+            page_name = None
             ctx.logger.debug(f"Reading page {page}")
             edit_log_file = os.path.join(pages_dir, page, "edit-log")
             # read the edit-log file
@@ -165,7 +166,7 @@ class MoinEditEntries:
                 edit_date = epoch + timedelta(microseconds=int(edit_fields[0]))
                 page_revision = edit_fields[1]
                 edit_type = edit_fields[2]
-                if edit_type == "SAVE/RENAME":
+                if edit_type == "SAVE/RENAME" or (page_name != None and page_name != edit_fields[3]):
                     previous_page_name = page_name
                     ed_type = MoinEditType.RENAME
                 else:
@@ -233,10 +234,10 @@ class MoinEditEntries:
             edit_date=datetime.now(),
             page_revision="1",
             edit_type=MoinEditType.PAGE,
-            page_name="Home",
+            page_name="Index",
             attachment="",
             comment="Synthetic Home Page",
-            page_path="Home",
+            page_path="Index",
             user=self.ctx.users.get_user_by_id_or_anonymous("0"),
             ctx=self.ctx,
         )
